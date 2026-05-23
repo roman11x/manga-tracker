@@ -9,7 +9,8 @@ public class Router {
         MAIN_MENU,
         LIST,
         DETAIL,
-        SEARCH
+        SEARCH,
+        QUIT
     }
 
     private ScreenState currentScreen;
@@ -37,8 +38,13 @@ public class Router {
         this.activeStatus = null;
         this.manga = manga;
     }
-    public void goToSearch(){
+    public void goToSearch() {
         this.currentScreen = ScreenState.SEARCH;
+        this.manga = null;
+    }
+
+    public void quit() {
+        this.currentScreen = ScreenState.QUIT;
         this.activeStatus = null;
         this.manga = null;
     }
@@ -48,6 +54,10 @@ public class Router {
     }
 
     public Manga getManga() {
+        return manga;
+    }
+
+    public Manga getSelectedManga() {
         return manga;
     }
 

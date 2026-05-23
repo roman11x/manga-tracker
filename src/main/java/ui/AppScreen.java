@@ -11,7 +11,8 @@ import com.googlecode.lanterna.terminal.Terminal;
 import javax.swing.*;
 import java.io.IOException;
 
-
+// This class is responsible for drawing the screen and handling user input.
+// It is a thin wrapper around the TerminalScreen class from Lanterna.
 public class AppScreen {
 
     private Screen screen; // manages hidden back buffer, watches for window resizes, and boots up your application space.
@@ -58,6 +59,19 @@ public class AppScreen {
         draw(row, col, text, TextColor.ANSI.WHITE);
     }
 
+    public void drawCentered(int row, int col, String text, TextColor color) {
+        this.textGraphics.setForegroundColor(color);
+        this.textGraphics.putString(col - (text.length() / 2), row, text);
+        this.textGraphics.setForegroundColor(TextColor.ANSI.WHITE);
+    }
+
+    public void generateTitle() {
+        String title = "MANGA TRACKER";
+        String underline = "=".repeat(title.length());
+        int centerCol = getCols() / 2;
+        drawCentered(0, centerCol, title, TextColor.ANSI.YELLOW_BRIGHT);
+        drawCentered(1, centerCol, underline, TextColor.ANSI.YELLOW_BRIGHT);
+    }
 
 
     public int getRows() {
