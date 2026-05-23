@@ -35,7 +35,6 @@ public class Router {
     }
     public void goToDetail(Manga manga){
         this.currentScreen = ScreenState.DETAIL;
-        this.activeStatus = null;
         this.manga = manga;
     }
     public void goToSearch() {

@@ -1,6 +1,6 @@
-import com.googlecode.lanterna.input.KeyStroke;
 import db.Database;
 import db.MangaRepository;
+import model.Manga;
 import model.Status;
 import ui.AppScreen;
 import ui.Router;
@@ -8,47 +8,34 @@ import ui.screens.DetailScreen;
 import ui.screens.ListScreen;
 import ui.screens.MainMenuScreen;
 
-import java.sql.Connection;
+import java.io.IOException;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         AppScreen screen = null;
 
         try {
             Database.initialize();
-
-            Connection connection = Database.getConnection();
-            MangaRepository repo = new MangaRepository(connection);
-
+            var connection = Database.getConnection();
             screen = new AppScreen();
-            Router router = new Router();
-
-            MainMenuScreen mainMenuScreen = new MainMenuScreen(screen, router);
-
+            var router = new Router();
+            var repo = new MangaRepository(connection);
+            var fireForce = new Manga(25, "FireForce",250, Status.PLAN_TO_READ);
+            var mainMenu = new MainMenuScreen(screen, router);
+            var  detailScreen = new DetailScreen(screen, router, repo);
+            var readingListScreen = new ListScreen(screen, router, repo, Status.READING);
+            var completedListScreen = new ListScreen(screen, router, repo, Status.COMPLETED);
+            var droppedListScreen = new ListScreen(screen, router, repo, Status.DROPPED);
+            var planToListScreen = new ListScreen(screen, router, repo, Status.PLAN_TO_READ);
+            router.goToMenu();
             while (router.getCurrentScreen() != Router.ScreenState.QUIT) {
                 switch (router.getCurrentScreen()) {
-                    case MAIN_MENU -> {
-                        mainMenuScreen.render();
-                        KeyStroke key = screen.readKey();
-                        mainMenuScreen.handleKey(key);
+                    case MAIN_MENU ->{
+                        mainMenu.render();
+                        mainMenu.handleKey( screen.readKey());
                     }
-                    case LIST -> {
-                        Status activeStatus = router.getActiveStatus();
-                        ListScreen listScreen = new ListScreen(screen, router, repo, activeStatus);
-
-                        listScreen.render();
-                        KeyStroke key = screen.readKey();
-                        listScreen.handleKey(key);
-                    }
-                    case DETAIL -> {
-                        DetailScreen detailScreen = new DetailScreen(screen, router, repo);
-
-                        detailScreen.render();
-                        KeyStroke key = screen.readKey();
-                        detailScreen.handleKey(key);
-                    }
-                    case SEARCH -> {
+                    case SEARCH ->{
                         screen.clear();
                         screen.draw(2, 2, "Search screen is not implemented yet.");
                         screen.draw(4, 2, "Press any key to return to the main menu.");
@@ -56,23 +43,41 @@ public class Main {
 
                         screen.readKey();
                         router.goToMenu();
+
                     }
-                    case QUIT -> {
+                    case LIST ->{
+
+                        var activeStatus = router.getActiveStatus();
+                        ListScreen activeListScreen = null;
+                         switch (activeStatus){
+                             case READING -> activeListScreen = readingListScreen;
+                             case COMPLETED -> activeListScreen = completedListScreen;
+                             case DROPPED -> activeListScreen = droppedListScreen;
+                             case PLAN_TO_READ -> activeListScreen = planToListScreen;
+                         }
+                         activeListScreen.render();
+                         activeListScreen.handleKey(screen.readKey());
+                    }
+                    case DETAIL ->{
+                        detailScreen.render();
+                        detailScreen.handleKey(screen.readKey());
                     }
                 }
             }
 
-            connection.close();
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+            throw new RuntimeException(e);
+        }
+        finally {
             if (screen != null) {
                 try {
                     screen.stop();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
+
+
     }
 }

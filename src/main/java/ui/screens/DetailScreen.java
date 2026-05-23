@@ -82,13 +82,16 @@ public class DetailScreen {
         if (character == '+') {
             manga.setChaptersRead(manga.getChaptersRead() + 1);
             repo.update(manga);
+            handleStartReadingIfNeeded(manga);
             handleCompletionIfNeeded(manga);
+
         } else if (character == 'e') {
             Integer chapter = readExactChapter(manga);
 
             if (chapter != null) {
                 manga.setChaptersRead(chapter);
                 repo.update(manga);
+                handleStartReadingIfNeeded(manga);
                 handleCompletionIfNeeded(manga);
             }
         } else if (character == 'd') {
@@ -151,6 +154,45 @@ public class DetailScreen {
             }
         }
     }
+    private void handleStartReadingIfNeeded(Manga manga) throws IOException {
+        if (manga.getStatus() == Status.PLAN_TO_READ) {
+
+            boolean startedReading = askStartedReadingPrompt(manga);
+            if(startedReading) {
+                manga.setStatus(Status.READING);
+                repo.update(manga);
+                router.goToList(Status.READING);
+            }
+        }
+    }
+    private boolean askStartedReadingPrompt(Manga manga) throws IOException {
+        while (true) {
+            screen.clear();
+
+            screen.draw(3, 2, "Have You Started reading Manga? " + manga.getTitle() + ".");
+            screen.draw(4, 2, "[y] yes    [n] no");
+
+            screen.refresh();
+
+            KeyStroke key = screen.readKey();
+
+            if (key.getCharacter() == null) {
+                continue;
+            }
+
+            char character = Character.toLowerCase(key.getCharacter());
+
+            if (character == 'y') {
+                return true;
+            }
+
+            if (character == 'n') {
+                return false;
+            }
+        }
+    }
+
+
 
     private boolean askCompletionPrompt(Manga manga) throws IOException {
         while (true) {
