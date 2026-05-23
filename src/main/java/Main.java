@@ -1,12 +1,12 @@
-import db.Database;
-import db.DatabaseException;
-import db.MangaRepository;
+import com.googlecode.lanterna.TerminalPosition;
+import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import com.googlecode.lanterna.terminal.Terminal;
 import model.Manga;
 import model.Status;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Temporary entry point used for testing the basic Manga model behavior.
@@ -18,65 +18,57 @@ import java.util.Optional;
 public class Main {
 
     public static void main(String[] args) {
+
+       /* var list = new ArrayList<Manga>();
+        var Dorohedoro = new Manga(1, "Dorohedoro", 10, Status.COMPLETED);
+        var MahouSenseiNegima = new Manga(2, "Mahou Sensei Negima", 10, Status.READING);
+        var Naruto = new Manga(3, "Naruto", 10, Status.READING);
+        var JujutsuKaisen = new Manga(4, "Jujutsu Kaisen", 10, Status.PLAN_TO_READ);
+        var Bleach = new Manga(5, "Bleach", 10, Status.READING);
+        list.add(Dorohedoro);
+        list.add(MahouSenseiNegima);
+        list.add(Naruto);
+        list.add(JujutsuKaisen);
+        list.add(Bleach);
+
+        List<Manga> processedResult = list.stream()
+                .filter(manga -> manga.getStatus() == Status.READING)
+                .sorted((m1, m2) -> m1.getTitle().compareTo(m2.getTitle()))
+                .toList();
+
+        List<Manga> page1 = processedResult.stream()
+                .skip(0)
+                .limit(2)
+                .toList();
+
+        List<Manga> page2 = processedResult.stream()
+                .skip(2)
+                .limit(2)
+                .toList();
+
+        System.out.println("page 1: " + page1.toString());
+        System.out.println("page 2: " + page2.toString());
+*/
+
+
+        DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
+        Terminal terminal = null;
         try {
-            Database.initialize();
-
-            try (Connection connection = Database.getConnection()) {
-                MangaRepository mangaRepository = new MangaRepository(connection);
-
-                Manga dorohedoro = new Manga(1, "Dorohedoro", 165, Status.READING);
-                dorohedoro.setChaptersRead(20);
-
-                Manga tokyoGhoul = new Manga(2, "Tokyo Ghoul", 143, Status.PLAN_TO_READ);
-
-                // Clean up old test data if this program was run before.
-                deleteIfExists(mangaRepository, dorohedoro.getMalid());
-                deleteIfExists(mangaRepository, tokyoGhoul.getMalid());
-
-                mangaRepository.insert(dorohedoro);
-                mangaRepository.insert(tokyoGhoul);
-
-                System.out.println("Manga with READING status:");
-                var readingManga = mangaRepository.findByStatus(Status.READING);
-
-                for (Manga manga : readingManga) {
-                    printManga(manga);
-                }
-
-                System.out.println();
-                System.out.println("Updating Dorohedoro chapters read to 45...");
-
-                mangaRepository.updateChaptersRead(dorohedoro.getMalid(), 45);
-
-                Optional<Manga> updatedManga = mangaRepository.findByMalId(dorohedoro.getMalid());
-
-                if (updatedManga.isPresent()) {
-                    System.out.println("Updated manga found:");
-                    printManga(updatedManga.get());
-                } else {
-                    System.out.println("Dorohedoro was not found.");
-                }
-            }
-        } catch (DatabaseException e) {
-            System.out.println("Database error: " + e.getMessage());
-        } catch (SQLException e) {
-            System.out.println("Could not close the database connection.");
+            terminal = defaultTerminalFactory.createTerminal();
+            terminal.setBackgroundColor(TextColor.ANSI.BLUE);
+            terminal.setForegroundColor(TextColor.ANSI.YELLOW);
+            terminal.putCharacter('H');
+            terminal.putCharacter('e');
+            terminal.putCharacter('l');
+            terminal.putCharacter('l');
+            terminal.putCharacter('o');
+            terminal.putCharacter('\n');
+            terminal.flush();
+            Thread.sleep(2000);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    }
 
-    private static void deleteIfExists(MangaRepository mangaRepository, int malId) {
-        if (mangaRepository.findByMalId(malId).isPresent()) {
-            mangaRepository.delete(malId);
-        }
-    }
 
-    private static void printManga(Manga manga) {
-        System.out.println("ID: " + manga.getMalid());
-        System.out.println("Title: " + manga.getTitle());
-        System.out.println("Status: " + manga.getStatus());
-        System.out.println("Chapters read: " + manga.getChaptersRead());
-        System.out.println("Total chapters: " + manga.getTotalChapters());
-        System.out.println();
     }
 }

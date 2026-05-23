@@ -1,0 +1,71 @@
+package ui;
+
+import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.graphics.TextGraphics;
+import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.screen.TerminalScreen;
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import com.googlecode.lanterna.terminal.Terminal;
+
+import javax.swing.*;
+import java.io.IOException;
+
+
+public class AppScreen {
+
+    private Screen screen; // manages hidden back buffer, watches for window resizes, and boots up your application space.
+    private TextGraphics textGraphics; // This is our actual ink pen. Whenever we want to draw a border symbol or write text, we tell this pen what to do.
+
+    public AppScreen() throws IOException {
+        Terminal terminal = new DefaultTerminalFactory().createTerminal();
+        this.screen = new TerminalScreen(terminal);
+        this.screen.startScreen(); // hide the normal cursor and enter fullscreen mode
+        this.textGraphics = this.screen.newTextGraphics();
+    }
+
+
+    //Lifecycle methods
+
+    // wipe our virtual scratchpad completely clean so we don't draw text on top of old data.
+    public void clear() {
+        this.screen.clear();
+    }
+
+    public void refresh() throws IOException {
+        this.screen.doResizeIfNecessary(); // make sure the user didn't change their window boundaries
+        this.screen.refresh(); // draw the screen to the real screen
+    }
+
+    public void stop() throws IOException {
+        screen.close();
+    }
+
+
+    public KeyStroke readKey() throws IOException {
+        return screen.readInput();
+    }
+
+    // Drawing methods
+
+    public void draw(int row, int col, String text, TextColor color) {
+        this.textGraphics.setForegroundColor(color);
+        this.textGraphics.putString(col, row, text);
+        this.textGraphics.setForegroundColor(TextColor.ANSI.WHITE);
+    }
+
+    public void draw(int row, int col, String text) {
+        draw(row, col, text, TextColor.ANSI.WHITE);
+    }
+
+
+
+    public int getRows() {
+        return this.screen.getTerminalSize().getRows();
+    }
+
+    public int getCols() {
+        return this.screen.getTerminalSize().getColumns();
+    }
+}
+

@@ -71,5 +71,8 @@ public class Manga {
         this.addedAt = date;
     }
 
-
+    @Override
+    public String toString() {
+        return "Manga{title='" + title + "', status=" + status + ", chapters read=" + chaptersRead + ", total chapters=" + totalChapters + "}";
+    }
 }
