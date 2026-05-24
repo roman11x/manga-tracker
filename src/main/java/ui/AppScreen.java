@@ -1,8 +1,10 @@
 package ui;
 
+import com.googlecode.lanterna.TerminalPosition;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.input.KeyStroke;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
@@ -72,6 +74,47 @@ public class AppScreen {
         drawCentered(0, centerCol, title, TextColor.ANSI.YELLOW_BRIGHT);
         drawCentered(1, centerCol, underline, TextColor.ANSI.YELLOW_BRIGHT);
     }
+
+    public String readUntilEnter(int startRow, int startCol) throws IOException {
+        StringBuilder inputBuffer = new StringBuilder();
+        int currentCol = startCol;
+
+        // Ensure the cursor is visible at the start position
+        this.screen.setCursorPosition(new TerminalPosition(startCol, startRow));
+        screen.refresh();
+
+        while (true) {
+            // readInput blocks until a key is pressed
+            KeyStroke keyStroke = screen.readInput();
+
+            if (keyStroke.getKeyType() == KeyType.Enter) {
+                break;
+            } else if (keyStroke.getKeyType() == KeyType.Character) {
+                char c = keyStroke.getCharacter();
+
+                inputBuffer.append(c);
+                draw(startRow, startCol, inputBuffer.toString(), TextColor.ANSI.WHITE);
+
+                currentCol++;
+                screen.setCursorPosition(new TerminalPosition(currentCol, startRow));
+                screen.refresh();
+            } else if (keyStroke.getKeyType() == KeyType.Backspace && !inputBuffer.isEmpty()) {
+                inputBuffer.deleteCharAt(inputBuffer.length() - 1);
+                currentCol--;
+
+                // Clear the deleted character and move the cursor back
+                draw(startRow, currentCol, " ", TextColor.ANSI.WHITE);
+                screen.setCursorPosition(new TerminalPosition(currentCol, startRow));
+                screen.refresh();
+            } else if (keyStroke.getKeyType() == KeyType.Escape) {
+                return null;
+            }
+        }
+
+        return inputBuffer.toString();
+    }
+
+
 
 
     public int getRows() {
