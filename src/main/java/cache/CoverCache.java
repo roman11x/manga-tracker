@@ -43,5 +43,15 @@ public class CoverCache {
 
     }
 
+    public void clear() throws IOException {
+        Files.walk(cacheDir).forEach(path -> {
+            try {
+                Files.delete(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 
 }
