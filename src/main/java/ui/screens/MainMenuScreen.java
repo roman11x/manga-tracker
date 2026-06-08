@@ -51,6 +51,7 @@ public class MainMenuScreen {
             screen.draw(startRow + i, col, prefix + labels[i], color); // draw the option
         }
         screen.draw(screen.getRows() -2, 2,"↑/↓ move   enter select");
+        screen.hideCursor();
         screen.refresh();
     }
 

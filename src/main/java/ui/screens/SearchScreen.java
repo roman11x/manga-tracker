@@ -52,6 +52,7 @@ public class SearchScreen {
 
         while (!future.isDone()) {
             screen.draw(2, 4, "Searching for: " + query + " " + spinners[spinIndex % spinners.length]);
+            screen.hideCursor();
             screen.refresh();
             spinIndex++;
 
@@ -69,6 +70,7 @@ public class SearchScreen {
         }
 
         screen.draw(16, 2, "Press 1-9 to select, or ESC to cancel.");
+        screen.hideCursor();
         screen.refresh();
         // Wait for the user to make a choice
        // screen.readUntilEnter(2, 22);screen.readUntilEnter(20, 2);screen.readUntilEnter(20, 2);

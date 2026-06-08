@@ -40,6 +40,10 @@ public class AppScreen {
         this.screen.refresh(); // draw the screen to the real screen
     }
 
+    public void hideCursor() {
+        this.screen.setCursorPosition(null);
+    }
+
     public void stop() throws IOException {
         screen.close();
     }

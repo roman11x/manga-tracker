@@ -70,6 +70,7 @@ public class ListScreen {
         }
 
         screen.draw(screen.getRows() - 2, 2, "↑/↓ move   enter open   esc back");
+        screen.hideCursor();
         screen.refresh();
     }
 

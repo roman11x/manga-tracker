@@ -27,7 +27,7 @@ public class CoverCache {
     public String download(int malId, String coverUrl) throws IOException, InterruptedException {
         Path dest = cacheDir.resolve(malId + ".jpg"); // Construct the destination path for the image
         if (Files.exists(dest)) { // If the image already exists, return its path
-            return dest.toUri().toString();
+            return dest.toString();
         }
 
         var request = HttpRequest.newBuilder()

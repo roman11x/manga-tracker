@@ -7,6 +7,7 @@ import db.MangaRepository;
 import model.Manga;
 import model.Status;
 import ui.AppScreen;
+import ui.KittyRenderer;
 import ui.Router;
 
 import java.io.IOException;
@@ -55,7 +56,13 @@ public class DetailScreen {
             screen.draw(12, 2, "[esc] back");
         }
 
+        screen.hideCursor();
         screen.refresh();
+
+        if (KittyRenderer.isSupported() && manga.getCoverPath() != null) {
+            KittyRenderer.render(manga.getCoverPath(), 45, 2, 24, 16);
+        }
+
     }
 
     public void handleKey(KeyStroke key) throws IOException {
@@ -140,6 +147,7 @@ public class DetailScreen {
         screen.draw(4, 2, "Chapter: " + input + "_");
         screen.draw(6, 2, "enter confirm   esc cancel");
 
+        screen.hideCursor();
         screen.refresh();
     }
 
@@ -172,6 +180,7 @@ public class DetailScreen {
             screen.draw(3, 2, "Have You Started reading Manga? " + manga.getTitle() + ".");
             screen.draw(4, 2, "[y] yes    [n] no");
 
+            screen.hideCursor();
             screen.refresh();
 
             KeyStroke key = screen.readKey();
@@ -202,6 +211,7 @@ public class DetailScreen {
             screen.draw(4, 2, "Mark " + manga.getTitle() + " as completed?");
             screen.draw(6, 2, "[y] yes    [n] keep reading");
 
+            screen.hideCursor();
             screen.refresh();
 
             KeyStroke key = screen.readKey();
