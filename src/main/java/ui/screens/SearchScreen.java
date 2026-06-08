@@ -2,6 +2,7 @@ package ui.screens;
 
 import api.JikanClient;
 import api.MangaResult;
+import cache.CoverCache;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import db.MangaRepository;
@@ -98,6 +99,10 @@ public class SearchScreen {
                         // map the temporary api result into a permanent database record
                         var manga = new Manga(mangaResult.getMalId(), mangaResult.getTitle(),
                                 mangaResult.getTotalChapters(), Status.PLAN_TO_READ);
+                        // download the cover image, save it to the cache, and get the path to the cached image
+                        var cache = new CoverCache();
+                        String imagePath = cache.download(mangaResult.getMalId(), mangaResult.getCoverPath());
+                        manga.setCoverPath(imagePath);
                         // save the manga to SQLite
                         repo.insert(manga);
                         router.goToMenu();
