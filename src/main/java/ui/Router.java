@@ -15,6 +15,7 @@ public class Router {
 
     private ScreenState currentScreen;
     private Status activeTab; // which status tab the library is showing
+    private boolean statsTab; // true when the library shows the Stats tab instead of a list
     private Manga manga;
     private String flashMessage; // one-shot message shown in the status bar
 
@@ -29,7 +30,18 @@ public class Router {
         if (tab != null) {
             this.activeTab = tab;
         }
+        this.statsTab = false;
         this.manga = null;
+    }
+
+    public void goToStats() {
+        this.currentScreen = ScreenState.LIBRARY;
+        this.statsTab = true;
+        this.manga = null;
+    }
+
+    public boolean isStatsTab() {
+        return statsTab;
     }
 
     public void goToDetail(Manga manga) {

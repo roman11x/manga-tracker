@@ -52,6 +52,9 @@ public class MangaRepository implements MangaDao{
          manga.setChaptersRead(resultSet.getInt("chapters_read"));
          manga.setCoverPath(resultSet.getString("cover_path"));
          manga.setAddedAt(resultSet.getString("added_at"));
+         manga.setTotalVolumes(resultSet.getInt("total_volumes"));
+         manga.setDemographic(resultSet.getString("demographic"));
+         manga.setGenres(resultSet.getString("genres"));
          return manga;
     }
      /**
@@ -71,9 +74,13 @@ public class MangaRepository implements MangaDao{
                     chapters_read,
                     total_chapters,
                     status,
-                    cover_path
+                    cover_path,
+                    total_volumes,
+                    demographic,
+                    genres,
+                    metadata_synced
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
                 """;
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
@@ -83,6 +90,9 @@ public class MangaRepository implements MangaDao{
             preparedStatement.setInt(4, manga.getTotalChapters());
             preparedStatement.setString(5, manga.getStatus().name());
             preparedStatement.setString(6, manga.getCoverPath());
+            preparedStatement.setInt(7, manga.getTotalVolumes());
+            preparedStatement.setString(8, manga.getDemographic());
+            preparedStatement.setString(9, manga.getGenres());
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -94,11 +104,14 @@ public class MangaRepository implements MangaDao{
     public void update(Manga manga) {
 
         String updateQuery = """
-                UPDATE manga 
+                UPDATE manga
                 SET chapters_read = ?,
                 total_chapters = ?,
                 status = ?,
-                cover_path = ? 
+                cover_path = ?,
+                total_volumes = ?,
+                demographic = ?,
+                genres = ?
                 WHERE mal_id = ?
                 """;
         try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
@@ -106,7 +119,10 @@ public class MangaRepository implements MangaDao{
             preparedStatement.setInt(2, manga.getTotalChapters());
             preparedStatement.setString(3, manga.getStatus().name());
             preparedStatement.setString(4, manga.getCoverPath());
-            preparedStatement.setInt(5, manga.getMalid());
+            preparedStatement.setInt(5, manga.getTotalVolumes());
+            preparedStatement.setString(6, manga.getDemographic());
+            preparedStatement.setString(7, manga.getGenres());
+            preparedStatement.setInt(8, manga.getMalid());
 
            int rowsUpdated = preparedStatement.executeUpdate();
            if (rowsUpdated == 0) {
@@ -200,6 +216,47 @@ public class MangaRepository implements MangaDao{
             throw new DatabaseException("Failed to delete manga with id " + malId , e);
         }
 
+    }
+
+    @Override
+    public List<Manga> findUnsynced() {
+        String selectQuery = "SELECT * FROM manga WHERE metadata_synced = 0";
+        var mangaList = new ArrayList<Manga>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement(selectQuery)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                mangaList.add(createMangaFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to fetch unsynced manga", e);
+        }
+        return mangaList;
+    }
+
+    @Override
+    public void updateMetadata(int malId, int totalVolumes, String demographic, String genres) {
+        String updateQuery = """
+                UPDATE manga
+                SET total_volumes = ?,
+                demographic = ?,
+                genres = ?,
+                metadata_synced = 1
+                WHERE mal_id = ?
+                """;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+            preparedStatement.setInt(1, totalVolumes);
+            preparedStatement.setString(2, demographic);
+            preparedStatement.setString(3, genres);
+            preparedStatement.setInt(4, malId);
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated == 0) {
+                throw createMangaNotFoundException(malId);
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update metadata for manga with id " + malId, e);
+        }
     }
 
     @Override

@@ -15,9 +15,12 @@ public class Manga {
     private final String title;
     private int chaptersRead;
     private  int totalChapters;
+    private int totalVolumes;
     private Status status;
     private String coverPath;
     private String addedAt;
+    private String demographic; // e.g. "Shounen"; null when MAL has none
+    private String genres;      // comma-separated genre/theme names; null when unknown
 
 
     /**
@@ -55,6 +58,15 @@ public class Manga {
     public String getAddedAt() {
         return this.addedAt;
     }
+    public int getTotalVolumes() {
+        return this.totalVolumes;
+    }
+    public String getDemographic() {
+        return this.demographic;
+    }
+    public String getGenres() {
+        return this.genres;
+    }
 
     //setters
     public void setChaptersRead(int chaptersRead) {
@@ -69,6 +81,15 @@ public class Manga {
     }
     public void setAddedAt(String date) {
         this.addedAt = date;
+    }
+    public void setTotalVolumes(int totalVolumes) {
+        this.totalVolumes = totalVolumes;
+    }
+    public void setDemographic(String demographic) {
+        this.demographic = demographic;
+    }
+    public void setGenres(String genres) {
+        this.genres = genres;
     }
 
     @Override

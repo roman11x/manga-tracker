@@ -9,6 +9,7 @@ A terminal-based manga reading tracker built in Java. Search for manga via the J
 ## Features
 
 - Tab-bar dashboard for the four lists — Reading, Plan to Read, Completed, Dropped
+- Stats tab — chapters/volumes read, completed count, breakdowns by status, demographic, and tags
 - Search the MyAnimeList database via the [Jikan API](https://jikan.moe/) without an API key
 - Live cover preview while browsing search results
 - Track chapter progress with gauges and automatic completion prompts
@@ -67,8 +68,9 @@ The database file `manga-tracker.db` is created in the directory you run the com
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Move selection |
-| `Tab` / `←` / `→` | Switch status tab |
+| `Tab` / `←` / `→` | Switch tab |
 | `1`–`4` | Jump to a status tab |
+| `5` | Stats tab |
 | `Enter` | Confirm / open |
 | `Esc` | Go back |
 | `s` | Search MyAnimeList |

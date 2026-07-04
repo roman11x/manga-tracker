@@ -225,6 +225,9 @@ public class SearchScreen {
         var manga = new Manga(result.getMalId(), result.getTitle(),
                 result.getTotalChapters(), Status.PLAN_TO_READ);
         manga.setCoverPath(coverPath);
+        manga.setTotalVolumes(result.getTotalVolumes());
+        manga.setDemographic(result.getDemographic());
+        manga.setGenres(result.getGenres());
 
         try {
             repo.insert(manga);

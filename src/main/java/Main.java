@@ -1,4 +1,5 @@
 import api.JikanClient;
+import api.MetadataSync;
 import db.Database;
 import db.MangaRepository;
 import ui.AppScreen;
@@ -22,9 +23,14 @@ public class Main {
             var router = new Router();
             var client = new JikanClient();
             var repo = new MangaRepository(connection);
-            var libraryScreen = new LibraryScreen(screen, router, repo);
+            var metadataSync = new MetadataSync(client);
+            var libraryScreen = new LibraryScreen(screen, router, repo, metadataSync);
             var detailScreen = new DetailScreen(screen, router, repo);
             var searchScreen = new SearchScreen(screen, router, client, repo);
+
+            // backfill volumes/demographic/genres for manga added before
+            // those fields existed; runs quietly in the background
+            metadataSync.start();
 
             while (router.getCurrentScreen() != Router.ScreenState.QUIT) {
                 Router.ScreenState before = router.getCurrentScreen();
@@ -32,7 +38,21 @@ public class Main {
                 switch (before) {
                     case LIBRARY -> {
                         libraryScreen.render();
-                        libraryScreen.handleKey(screen.readKey());
+
+                        // while the metadata backfill is running, re-render
+                        // periodically so stats fill in live instead of
+                        // blocking on input with stale numbers
+                        var key = screen.pollKey();
+                        while (key == null) {
+                            if (metadataSync.unsyncedCount() > 0) {
+                                Thread.sleep(300);
+                                libraryScreen.render();
+                                key = screen.pollKey();
+                            } else {
+                                key = screen.readKey();
+                            }
+                        }
+                        libraryScreen.handleKey(key);
                     }
                     case SEARCH -> searchScreen.render();
                     case DETAIL -> {

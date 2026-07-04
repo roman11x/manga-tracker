@@ -81,6 +81,14 @@ public class DetailScreen {
         screen.draw(6, col, "Added", Theme.DIM);
         screen.draw(6, col + 10, addedAt);
 
+        if (manga.getDemographic() != null || manga.getGenres() != null) {
+            String tags = manga.getDemographic() != null && manga.getGenres() != null
+                    ? manga.getDemographic() + " · " + manga.getGenres()
+                    : manga.getDemographic() != null ? manga.getDemographic() : manga.getGenres();
+            screen.draw(7, col, "Tags", Theme.DIM);
+            screen.draw(7, col + 10, screen.truncate(tags, leftWidth - col - 12));
+        }
+
         int actionRow = 9;
         // a Completed manga has no next chapter; '-' stays because lowering
         // the count is how it moves back to Reading

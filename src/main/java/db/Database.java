@@ -2,6 +2,7 @@ package db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -67,9 +68,42 @@ public class Database {
     try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
         stmt.execute(createTableQuery);
         stmt.execute(indexQuery);
+        migrate(conn);
     } catch (SQLException e) {
         throw new DatabaseException("Could not initialize the database schema", e);
     }
 }
+
+    /**
+     * Adds columns that were introduced after the table was first created.
+     *
+     * Databases created by older versions of the app lack the metadata
+     * columns (volumes, demographic, genres), so they are added here with
+     * ALTER TABLE. Purely additive: existing rows and data are untouched.
+     */
+    private static void migrate(Connection conn) throws SQLException {
+        var existingColumns = new java.util.HashSet<String>();
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("PRAGMA table_info(manga)")) {
+            while (rs.next()) {
+                existingColumns.add(rs.getString("name"));
+            }
+        }
+
+        var newColumns = java.util.Map.of(
+                "total_volumes", "INTEGER NOT NULL DEFAULT 0",
+                "demographic", "TEXT",
+                "genres", "TEXT",
+                "metadata_synced", "INTEGER NOT NULL DEFAULT 0"
+        );
+
+        try (Statement stmt = conn.createStatement()) {
+            for (var column : newColumns.entrySet()) {
+                if (!existingColumns.contains(column.getKey())) {
+                    stmt.execute("ALTER TABLE manga ADD COLUMN " + column.getKey() + " " + column.getValue());
+                }
+            }
+        }
+    }
 
 }

@@ -47,6 +47,18 @@ public interface MangaDao {
      */
     void delete(int malId);
     /**
+     * Returns manga whose Jikan metadata (volumes, demographic, genres)
+     * has not been fetched yet.
+     */
+    List<Manga> findUnsynced();
+    /**
+     * Stores the Jikan metadata for a manga and marks it as synced.
+     *
+     * Only touches the metadata columns so it cannot clobber reading
+     * progress written concurrently from the UI.
+     */
+    void updateMetadata(int malId, int totalVolumes, String demographic, String genres);
+    /**
      * Returns all manga stored in the database.
      */
     List<Manga> findAll();
