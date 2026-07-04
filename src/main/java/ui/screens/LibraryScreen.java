@@ -156,21 +156,31 @@ public class LibraryScreen {
         LibraryStats stats = new LibraryStats(repo.findAll());
 
         int areaRow = HEADER_HEIGHT;
-        int areaHeight = Math.max(9, rows - HEADER_HEIGHT - 1);
-
-        // grid: two columns of two panels, plus a full-width tags panel below
-        int tagsHeight = Math.max(4, Math.min(6, areaHeight - 12));
-        int gridHeight = areaHeight - tagsHeight;
-        int topHeight = Math.max(3, gridHeight / 2);
-        int bottomHeight = Math.max(3, gridHeight - topHeight);
+        int maxBottom = rows - 1; // the status bar owns the last row
         int leftWidth = cols / 2;
         int rightWidth = cols - leftWidth;
 
-        drawOverviewPanel(stats, areaRow, 0, leftWidth, topHeight);
-        drawBreakdownPanel(stats, areaRow, leftWidth, rightWidth, topHeight);
-        drawReadingPanel(stats, areaRow + topHeight, 0, leftWidth, bottomHeight);
-        drawDemographicsPanel(stats, areaRow + topHeight, leftWidth, rightWidth, bottomHeight);
-        drawTagsPanel(stats, areaRow + gridHeight, 0, cols, tagsHeight);
+        // panels are sized to their content and stacked from the top; on a
+        // tall terminal the leftover space simply stays empty instead of
+        // stretching three lines of numbers across a giant box
+        int overviewHeight = 5;                                    // 3 number lines
+        int readingHeight = stats.countFor(Status.READING) == 0 ? 3 : 4;
+        int breakdownHeight = TABS.length + 2;                     // one bar per status
+        int demographicsCount = Math.max(1, Math.min(stats.getDemographics().size(), 6));
+        int demographicsHeight = Math.min(demographicsCount + 2,
+                Math.max(3, maxBottom - (areaRow + breakdownHeight)));
+
+        drawOverviewPanel(stats, areaRow, 0, leftWidth, overviewHeight);
+        drawReadingPanel(stats, areaRow + overviewHeight, 0, leftWidth, readingHeight);
+        drawBreakdownPanel(stats, areaRow, leftWidth, rightWidth, breakdownHeight);
+        drawDemographicsPanel(stats, areaRow + breakdownHeight, leftWidth, rightWidth, demographicsHeight);
+
+        int tagsRow = Math.max(areaRow + overviewHeight + readingHeight,
+                areaRow + breakdownHeight + demographicsHeight);
+        int tagsHeight = Math.min(6, maxBottom - tagsRow);
+        if (tagsHeight >= 3) {
+            drawTagsPanel(stats, tagsRow, 0, cols, tagsHeight);
+        }
 
         String flash = router.takeFlash();
         if (flash != null) {
@@ -275,11 +285,13 @@ public class LibraryScreen {
         }
     }
 
-    // one "label ▰▰▰▰ count" row, bar scaled against the largest count
+    // one "label ▰▰▰▰ count" row, bar scaled against the largest count.
+    // The bar is capped at 40 cells so counts stay next to the bars on
+    // wide terminals instead of drifting to the far edge of the panel.
     private void drawBarRow(int row, int col, int width, String label, int count, int maxCount, com.googlecode.lanterna.TextColor color) {
         int labelWidth = Math.min(14, Math.max(8, width / 3));
         int countWidth = 4;
-        int gaugeWidth = Math.max(0, width - labelWidth - countWidth - 3);
+        int gaugeWidth = Math.min(40, Math.max(0, width - labelWidth - countWidth - 3));
 
         screen.draw(row, col, padRight(screen.truncate(label, labelWidth), labelWidth), Theme.TEXT);
         if (gaugeWidth > 0) {
