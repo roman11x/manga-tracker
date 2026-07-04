@@ -23,7 +23,8 @@ public class JikanClient {
         //build the http request
         // url encode the query
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
-        String url = "https://api.jikan.moe/v4/manga?q=" + encodedQuery;
+        // limit=9 so every result fits on screen and stays selectable
+        String url = "https://api.jikan.moe/v4/manga?q=" + encodedQuery + "&limit=9";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .GET()
@@ -51,7 +52,7 @@ public class JikanClient {
                                 JsonNode imagesNode = itemNode.get("images");
                                 if(imagesNode != null) {
                                     JsonNode jpgNode = imagesNode.get("jpg");
-                                    if (jpgNode != null) {
+                                    if (jpgNode != null && jpgNode.hasNonNull("image_url")) {
                                         String imageUrl = jpgNode.get("image_url").asText();
                                         manga.setCoverPath(imageUrl);
                                     }

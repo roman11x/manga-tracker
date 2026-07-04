@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 // This class is responsible for downloading and caching covers for manga.
 
@@ -37,7 +38,16 @@ public class CoverCache {
 
         var response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        Files.copy(response.body(), dest); // Save the image to the cache directory
+        // Only cache real images — a 404/429 body would poison the cache with
+        // an error page saved as .jpg
+        if (response.statusCode() != 200) {
+            response.body().close();
+            return null;
+        }
+
+        // Save the image to the cache directory; REPLACE_EXISTING so two
+        // concurrent downloads of the same cover can't collide
+        Files.copy(response.body(), dest, StandardCopyOption.REPLACE_EXISTING);
 
         return dest.toString();
 

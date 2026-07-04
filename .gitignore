@@ -1,3 +1,6 @@
+# user data — every run modifies it
+manga-tracker.db
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

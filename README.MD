@@ -8,12 +8,14 @@ A terminal-based manga reading tracker built in Java. Search for manga via the J
 
 ## Features
 
-- Browse and manage manga across four lists — Reading, Plan to Read, Completed, Dropped
+- Tab-bar dashboard for the four lists — Reading, Plan to Read, Completed, Dropped
 - Search the MyAnimeList database via the [Jikan API](https://jikan.moe/) without an API key
-- Track chapter progress with automatic completion prompts
+- Live cover preview while browsing search results
+- Track chapter progress with gauges and automatic completion prompts
+- Add and remove manga from the tracker
 - Cover art rendered inline using the [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) on supported terminals
 - Persistent SQLite storage — no server required
-- Fully keyboard-driven TUI
+- Fully keyboard-driven TUI that adapts to your terminal size
 
 ---
 
@@ -65,13 +67,18 @@ The database file `manga-tracker.db` is created in the directory you run the com
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Move selection |
+| `Tab` / `←` / `→` | Switch status tab |
+| `1`–`4` | Jump to a status tab |
 | `Enter` | Confirm / open |
 | `Esc` | Go back |
-| `+` | Increment chapter |
-| `e` | Set exact chapter |
+| `s` | Search MyAnimeList |
+| `+` / `-` | Increment / decrement chapter |
+| `e` | Set exact chapter (fix misinputs) |
 | `d` | Drop manga |
 | `r` | Resume dropped manga |
+| `x` | Remove manga from tracker |
 | `n` / `p` | Next / previous page |
+| `q` | Quit |
 
 ---
 

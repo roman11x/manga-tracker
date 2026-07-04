@@ -19,18 +19,63 @@ public class KittyRenderer {
         return "xterm-kitty".equals(term) || "ghostty".equals(termProgram) || konsoleVersion != null;
     }
 
+    // Delete every image the terminal is currently displaying. Lanterna's
+    // delta refresh never repaints cells under an image, so without this the
+    // cover would keep floating over whatever screen comes next.
+    public static void clearImages() {
+        System.out.print("\033_Ga=d\033\\");
+        System.out.flush();
+    }
+
+    /**
+     * Renders the image scaled to fit inside a box of maxWidthCells x
+     * maxHeightCells without distortion. Terminal cells are roughly twice as
+     * tall as they are wide, so the cell box matching the image's aspect
+     * ratio is computed with that 2:1 correction before rendering.
+     */
+    public static void renderFit(String imagePath, int col, int row, int maxWidthCells, int maxHeightCells) throws IOException {
+        BufferedImage image = readImage(imagePath);
+
+        if (image == null || maxWidthCells <= 0 || maxHeightCells <= 0) {
+            return;
+        }
+
+        double aspect = (double) image.getWidth() / image.getHeight();
+
+        int heightCells = maxHeightCells;
+        int widthCells = (int) Math.round(heightCells * aspect * 2);
+
+        if (widthCells > maxWidthCells) {
+            widthCells = maxWidthCells;
+            heightCells = Math.max(1, (int) Math.round(widthCells / (aspect * 2)));
+        }
+
+        transmit(image, col, row, Math.max(1, widthCells), heightCells);
+    }
+
     public static void render(String imagePath, int col, int row, int widthCells, int heightCells) throws IOException {
-
-        Path path = imagePath.startsWith("file:")
-                ? Path.of(URI.create(imagePath))
-                : Path.of(imagePath);
-
-        BufferedImage image = ImageIO.read(path.toFile());
+        BufferedImage image = readImage(imagePath);
 
         if (image == null) {
             return;
         }
 
+        transmit(image, col, row, widthCells, heightCells);
+    }
+
+    private static BufferedImage readImage(String imagePath) throws IOException {
+        Path path = imagePath.startsWith("file:")
+                ? Path.of(URI.create(imagePath))
+                : Path.of(imagePath);
+
+        if (!path.toFile().exists()) {
+            return null;
+        }
+
+        return ImageIO.read(path.toFile());
+    }
+
+    private static void transmit(BufferedImage image, int col, int row, int widthCells, int heightCells) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         ImageIO.write(image, "png", output); // the kitty terminal only supports PNG images
 
