@@ -35,7 +35,7 @@ To add support for another Kitty-protocol-compatible terminal, edit the `isSuppo
 
 ---
 
-## Screenshots
+
 
 ## Screenshots
 
